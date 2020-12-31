@@ -1,0 +1,12 @@
+  - platform: mqtt
+    schema: json
+    name: Sonoff Test
+    state_topic: "stat/test/pow"
+    command_topic: "cmnd/test/pow"
+    brightness: true
+    rgb: true
+    effect: true
+    effect_list: [Solid, Random]
+    retain: true
+    optimistic: false
+    qos: 1
