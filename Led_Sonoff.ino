@@ -8,6 +8,7 @@
 #include <StoreStrings.h>
 #include <FastLED.h>
 #include <ArduinoJson.h>
+#include <ESP8266httpUpdate.h>
 #include "GlobalVar.h"
 #include "HomePage.h"
 
@@ -35,14 +36,20 @@ void setup() {
   pushButtonPre = pushButton;
 
   Serial.println("\n----------------------");
-  Serial.println("Application running!");
+  Serial.println("Application ver. " + String(Version) + " running!");
   Connection_Manager();
   randomSeed(millis());
 }
 
 void loop() {
   if (deviceConnected) {
-    client.loop();
+    if (client.connected()) {
+      client.loop();
+    } else {
+      client.connect(Hostname.Val.c_str(), MqttUser.Val.c_str(), MqttPassword.Val.c_str());
+      client.subscribe(MqttSubTopic.Val.c_str());
+      Serial.println("Mqtt client reconnected");
+    }
   }
   server.handleClient();
 
@@ -53,12 +60,13 @@ void loop() {
     Led.Off();
     delay(PLACING_TIME);
     lastTimeCheckConn = millis();
-    if ((WiFi.status() != WL_CONNECTED) || !client.connected()) {
+    
+    if (WiFi.status() != WL_CONNECTED) {
       Connection_Manager();
     } else {
       Serial.println("OK");
+      OtaUpdate();
       // Accendo led di conferma connessione alla rete
-      delay(PLACING_TIME);
       Led.On();
     }
   }
@@ -74,7 +82,7 @@ void loop() {
   if (pushButtonPre && !pushButton) {
     PushButtonFunction(pushButtonCount);
     pushButtonCount = 0;
-    if (WiFi.status() == WL_CONNECTED) {
+    if (deviceConnected) {
       Led.On();
     }
   }
@@ -188,7 +196,8 @@ void PushButtonFunction(int func) {
       Connection_Manager();
       break;
     case 3:
-      Restart();
+      Serial.println("Check FW update");
+      OtaUpdate();
       break;
     case 4:
       Serial.println("Show ip address");
@@ -225,6 +234,10 @@ void PushButtonFunction(int func) {
         RGB_Efect_Selected = Random.Effect_Number;
       }
       break;
+    case 11:
+      Serial.println("Sonoff restart");
+      Restart();
+      break;
     default:
       Serial.println("No function!");
       Led.Blink(PLACING_TIME, 5, TIME_FLASH_BLINK);
@@ -242,8 +255,6 @@ void SetLedStrip(byte red, byte green, byte blue, byte brightness) {
 
   if (deviceConnected && (RGB_Efect_Selected == Solid.Effect_Number)) {
     String msg_out;
-    StaticJsonDocument<256> doc;
-    JsonObject message = doc.to<JsonObject>();
     JsonObject color = message.createNestedObject("color");
     color["r"] = R;
     color["g"] = G;
@@ -251,7 +262,7 @@ void SetLedStrip(byte red, byte green, byte blue, byte brightness) {
     serializeJson(message, msg_out);
     client.publish(MqttPubTopic.Val.c_str(), msg_out.c_str());
   }
-
+    
   Serial.println("LedStrip updated -> R:" + String(red) + " G:" + String(green) + " B:" + String(blue) + " Brightness:" + String(brightness));
 }
 
@@ -265,35 +276,32 @@ void Restart() {
 void Switch_On() {
   if (Rele.State() == OFF_RELAY) {
     Rele.On();
-
+    
     if (deviceConnected) {
       String msg_out;
       message["state"] = ON_PAYLOAD;
       serializeJson(message, msg_out);
       client.publish(MqttPubTopic.Val.c_str(), msg_out.c_str());
     }
-    // Riardo per avvio alimentatore
+    
+    // Riardo per stabilizzazione alimentazione
     delay(1000);
   }
+  
   SetLedStrip(R, G, B, Brightness);
 }
 
 void Switch_Off() {
   Rele.Off();
-  RGB_Efect_Selected = Solid.Effect_Number;
-
+  
   if (deviceConnected) {
     String msg_out;
-    StaticJsonDocument<256> doc;
-    JsonObject message = doc.to<JsonObject>();
     message["state"] = OFF_PAYLOAD;
-    JsonObject color = message.createNestedObject("color");
-    color["r"] = R;
-    color["g"] = G;
-    color["b"] = B;
     serializeJson(message, msg_out);
     client.publish(MqttPubTopic.Val.c_str(), msg_out.c_str());
   }
+  
+  RGB_Efect_Selected = Solid.Effect_Number;
 }
 
 void Switch_Toggle() {
@@ -354,7 +362,7 @@ void Callback(char *topic, byte *payload, unsigned int length) {
         Serial.println("  - Key unknown recived = " + key + kv.value().as<char*>());
       }
     }
-
+    
     if (state.equals(OFF_PAYLOAD)) {
       Switch_Off();
     }
@@ -473,18 +481,18 @@ void Connection_Manager() {
     client.setCallback(Callback);
     client.connect(Hostname.Val.c_str(), MqttUser.Val.c_str(), MqttPassword.Val.c_str());
     client.subscribe(MqttSubTopic.Val.c_str());
-    deviceConnected = true;
 
     // Accendo led per indicare l'avvenuta connessione
     Led.On();
+    deviceConnected = true;
 
   } else {
     Serial.println("Not connected!");
     // Lampeggio connessione fallita
     Led.Blink(PLACING_TIME, 10, TIME_FLASH_BLINK);
-    deviceConnected = false;
     // Lascio spento il led per indicare l'assenza di connessione
     Led.Off();
+    deviceConnected = false;
   }
 
   // Configurazione AP e webServer
@@ -694,4 +702,33 @@ void LoadSettingsFromEeprom() {
     Serial.println( WifiSettings[i]->Name + ": " +  WifiSettings[i]->Val);
   }
   Serial.println("Settings loaded!");
+}
+
+void OtaUpdate() {
+  String url = "http://otadrive.com/DeviceApi/GetEsp8266Update?";
+  url += "&s=" + String(CHIPID);
+  url += MakeFirmwareInfo(ProductKey, Version);
+
+  Serial.println("Get firmware from url:");
+  Serial.println(url);
+
+  t_httpUpdate_return ret = ESPhttpUpdate.update(espClient, url, Version);
+  
+  switch (ret)
+  {
+  case HTTP_UPDATE_FAILED:
+    Serial.println("Update faild!");
+    Led.Blink(PLACING_TIME, 10, TIME_FLASH_BLINK);
+    break;
+  case HTTP_UPDATE_NO_UPDATES:
+    Serial.println("No new update available");
+    Led.Blink(PLACING_TIME, 3, TIME_FLASH_BLINK);
+    break;
+  case HTTP_UPDATE_OK:
+    Serial.println("Update OK");
+    Led.Blink(PLACING_TIME, 5, TIME_FLASH_BLINK);
+    break;
+  default:
+    break;
+  }
 }
