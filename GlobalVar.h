@@ -57,8 +57,8 @@ Sonoff r3 (ESP8285)
 #define ON_PAYLOAD              "ON"
 #define OFF_PAYLOAD             "OFF"
 //----------------------------------------------------------------------------
-#define ProductKey              "2e8f823f-ed0c-4732-966a-16128b58340c"
-#define Version                 "25.0.0.0"
+#define ProductKey              "2aea9e14-07a7-4d73-8d83-1dc42cee5622"
+#define Version                 "26.0.0.0"
 #define MakeFirmwareInfo(k, v)  "&_FirmwareInfo&k=" k "&v=" v "&FirmwareInfo_&"
 //----------------------------------------------------------------------------
 bool pushButton                 = false;

@@ -698,7 +698,7 @@ void LoadSettingsFromEeprom() {
 
 void OtaUpdate() {
   String url = "http://otadrive.com/DeviceApi/GetEsp8266Update?";
-  url += "&s=" + String(CHIPID);
+  url += "&s=" + Hostname.Val;
   url += MakeFirmwareInfo(ProductKey, Version);
 
   Serial.println("Get firmware from url:");

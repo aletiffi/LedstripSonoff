@@ -1,1 +1,1 @@
-Inserisce "Page not found" e reindirizzamento corretto url pulsanti, gestione tramite oggetto json in ChangeColor
+Sostituisce chipID con Hostname dispositivo, cambia product key
