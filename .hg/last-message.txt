@@ -1,1 +1,1 @@
-Corregge invio colori da sonoff ad hassio dopo l'effettivo cambio
+Inserisce "Page not found" e reindirizzamento corretto url pulsanti, gestione tramite oggetto json in ChangeColor

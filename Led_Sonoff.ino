@@ -30,7 +30,7 @@ void setup() {
   Rele.Begin();
   Led.Begin();
   pinMode(SONOFF_LEDSTRIP, OUTPUT);
-  FastLED.addLeds<WS2811, SONOFF_LEDSTRIP, BRG>(leds, NUM_LEDS);
+  FastLED.addLeds<WS2811, SONOFF_LEDSTRIP, BRG>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
 
   pushButton = !Button.State();
   pushButtonPre = pushButton;
@@ -507,25 +507,44 @@ void Connection_Manager() {
     server.send(200, "text/html", webPage);
   });
   server.on("/on", []() {
-    server.send(200, "text/html", webPage);
+    server.sendHeader("Location","/");
+    server.send(303);
     Switch_On();
   });
   server.on("/off", []() {
-    server.send(200, "text/html", webPage);
+    server.sendHeader("Location","/");
+    server.send(303);
     Switch_Off();
   });
   server.on("/restart", []() {
-    server.send(200, "text/html", webPage);
+    server.sendHeader("Location","/");
+    server.send(303);
     Restart();
   });
   server.on("/brigthness", HTTP_POST, ChangeBrigthness);
   server.on("/effect", HTTP_POST, ChangeEffect);
   server.on("/settings", HTTP_POST, ChangeSettings);
   server.on("/color", HTTP_POST, ChangeColor);
+  server.onNotFound(handleNotFound);
   server.begin();
 
   // Azzero ultimo tempo di connessione
   lastTimeCheckConn = millis();
+}
+
+void handleNotFound() {
+  String message = "Err 404\nPage Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+  for (uint8_t i = 0; i < server.args(); i++) {
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+  server.send(404, "text/plain", message);
 }
 
 void ChangeBrigthness() {
@@ -565,53 +584,26 @@ void ChangeEffect() {
 }
 
 void ChangeColor() {
-  int numIteration = 0;
-  int startPoint = -1;
-  int parNum = 0;
-  String valRecived;
   String data = server.arg("plain");
-
   Serial.print("Color recived: ");
-  for (int i = 0; i < data.length(); i++) {
-    if (data.charAt(i) == '"') {
-      if (startPoint == -1) {
-        startPoint = i;
+  deserializeJson(message, data);
+  JsonObject root = message.as<JsonObject>();
+  for (JsonPair kv : root) {
+    String key = kv.key().c_str();
+    if (key.equals("color")) {
+      const char* col = message["color"];
+      String color = String(col);
+      if (color.length() == 7) {
+        R = HexString2Byte(color.substring(1, 3));
+        G = HexString2Byte(color.substring(3, 5));
+        B = HexString2Byte(color.substring(5, color.length()));
+        Serial.println(color + " -> R: " + String(R) + " G: " + String(G) + " B: " + String(B));
+        SetLedStrip(R, G, B, Brightness);
       } else {
-        valRecived = data.substring(startPoint + 2, i);
-        startPoint = -1;
-        numIteration++;
-        if (numIteration % 2 == 0) {
-          R = HexString2Byte(valRecived.substring(0, 2));
-          G = HexString2Byte(valRecived.substring(2, 4));
-          B = HexString2Byte(valRecived.substring(4, valRecived.length()));
-          Serial.println("R: " + String(R) + " G: " + String(G) + " B: " + String(B));
-          SetLedStrip(R, G, B, Brightness);
-        }
+        Serial.println(color + " -> unable to decode");
       }
     }
   }
-
-// DA PROVARE SEMBRA NON FUNZIONARE
-//  String data = server.arg("plain");
-//  Serial.print("Color recived: ");
-//  deserializeJson(message, data);
-//  JsonObject root = message.as<JsonObject>();
-//  for (JsonPair kv : root) {
-//    String key = kv.key().c_str();
-//    if (key.equals("color")) {
-//      const char* col = message["color"];
-//      String color = String(col);
-//      if (color.length() == 7) {
-//        R = HexString2Byte(color.substring(1, 3));
-//        G = HexString2Byte(color.substring(3, 5));
-//        B = HexString2Byte(color.substring(5, color.length()));
-//        Serial.println(color + " -> R: " + String(R) + " G: " + String(G) + " B: " + String(B));
-//        SetLedStrip(R, G, B, Brightness);
-//      } else {
-//        Serial.println(color + " -> unable to decode");
-//      }
-//    }
-//  }
 }
 
 byte HexString2Byte(String val) {
