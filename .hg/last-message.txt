@@ -1,1 +1,1 @@
-Sostituisce chipID con Hostname dispositivo, cambia product key
+Importa modifiche come da ver 31 switch, cambia productkey

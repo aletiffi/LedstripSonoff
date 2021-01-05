@@ -46,9 +46,16 @@ void loop() {
     if (client.connected()) {
       client.loop();
     } else {
-      client.connect(Hostname.Val.c_str(), MqttUser.Val.c_str(), MqttPassword.Val.c_str());
-      client.subscribe(MqttSubTopic.Val.c_str());
-      Serial.println("Mqtt client reconnected");
+      if (millis() - lastMqttCheckConn > MQTT_CONNECTION) {
+        Serial.println("Mqtt client not connected");
+        lastMqttCheckConn = millis();
+        // Prova a riconnettere
+        if (client.connect(Hostname.Val.c_str(), MqttUser.Val.c_str(), MqttPassword.Val.c_str())) {
+          lastMqttCheckConn = 0;
+          client.subscribe(MqttSubTopic.Val.c_str());
+          Serial.println("Mqtt client reconnected");
+        }
+      }
     }
   }
   server.handleClient();
@@ -278,10 +285,13 @@ void Switch_On() {
     Rele.On();
     
     if (deviceConnected) {
-      String msg_out;
-      message["state"] = ON_PAYLOAD;
-      serializeJson(message, msg_out);
-      client.publish(MqttPubTopic.Val.c_str(), msg_out.c_str());
+      JsonObject msg = message.to<JsonObject>();    
+      char msg_out[JSON_MSG_LENGTH];
+      msg["state"] = ON_PAYLOAD;
+      serializeJson(msg, msg_out);
+      client.publish(MqttPubTopic.Val.c_str(), msg_out);
+      Serial.print("Message published: ");
+      Serial.println(msg_out);
     }
     
     // Riardo per stabilizzazione alimentazione
@@ -295,10 +305,13 @@ void Switch_Off() {
   Rele.Off();
   
   if (deviceConnected) {
-    String msg_out;
-    message["state"] = OFF_PAYLOAD;
-    serializeJson(message, msg_out);
-    client.publish(MqttPubTopic.Val.c_str(), msg_out.c_str());
+    JsonObject msg = message.to<JsonObject>();    
+    char msg_out[JSON_MSG_LENGTH];
+    msg["state"] = OFF_PAYLOAD;
+    serializeJson(msg, msg_out);
+    client.publish(MqttPubTopic.Val.c_str(), msg_out);
+    Serial.print("Message published: ");
+    Serial.println(msg_out);
   }
   
   RGB_Efect_Selected = Solid.Effect_Number;
@@ -313,14 +326,11 @@ void Switch_Toggle() {
 }
 
 void Callback(char *topic, byte *payload, unsigned int length) {
-  char message_buff[length];
-  byte i = 0;
-
-  for (i = 0; i < length; i++) {
-    message_buff[i] = payload[i];
+  Serial.print("Payload recived: ");
+  for (byte i = 0; i < length; i++) {
+    Serial.print(char(payload[i]));
   }
-  message_buff[i] = '\0';
-  Serial.println("Payload recived: " + String(message_buff));
+  Serial.println("");
 
   if ((String(topic) == MqttSubTopic.Val) && (length > 5)) {
     const char* stat;
@@ -477,6 +487,15 @@ void Connection_Manager() {
 
   if (WiFi.status() == WL_CONNECTED) {
     Serial.println("Connected!");
+    if (mac.equals("")) {
+      String macTemp = String(WiFi.macAddress());
+      for (byte i=0; i<macTemp.length(); i++){
+        if (macTemp.charAt(i) != ':'){
+          mac += macTemp.charAt(i);
+        }
+      }
+    }
+    Serial.println("IP: " + WiFi.localIP().toString() + " Mac: " + String(WiFi.macAddress()));
     client.setServer(MqttServer.Val.c_str(), 1883);
     client.setCallback(Callback);
     client.connect(Hostname.Val.c_str(), MqttUser.Val.c_str(), MqttPassword.Val.c_str());
@@ -698,29 +717,26 @@ void LoadSettingsFromEeprom() {
 
 void OtaUpdate() {
   String url = "http://otadrive.com/DeviceApi/GetEsp8266Update?";
-  url += "&s=" + Hostname.Val;
+  url += "&s=" + mac;
   url += MakeFirmwareInfo(ProductKey, Version);
 
   Serial.println("Get firmware from url:");
   Serial.println(url);
 
   t_httpUpdate_return ret = ESPhttpUpdate.update(espClient, url, Version);
-  
   switch (ret)
   {
   case HTTP_UPDATE_FAILED:
-    Serial.println("Update faild!");
-    Led.Blink(PLACING_TIME, 10, TIME_FLASH_BLINK);
+    Serial.printf("Update Faild, Error: (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
     break;
   case HTTP_UPDATE_NO_UPDATES:
     Serial.println("No new update available");
-    Led.Blink(PLACING_TIME, 3, TIME_FLASH_BLINK);
     break;
   case HTTP_UPDATE_OK:
     Serial.println("Update OK");
-    Led.Blink(PLACING_TIME, 5, TIME_FLASH_BLINK);
     break;
   default:
+    Serial.println(ret);
     break;
   }
 }
