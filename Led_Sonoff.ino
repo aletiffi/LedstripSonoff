@@ -59,6 +59,7 @@ void loop() {
     }
   }
   server.handleClient();
+  mdns.update();
 
   // Controllo connessione
   if (millis() - lastTimeCheckConn > TIMER_CONNECTION) {
@@ -522,6 +523,7 @@ void Connection_Manager() {
 
   WiFi.softAP(Hostname.Val.c_str());
   mdns.begin(Hostname.Val, WiFi.localIP());
+  mdns.addService("http", "tcp", 80);
   server.on("/", []() {
     server.send(200, "text/html", webPage);
   });
@@ -709,7 +711,7 @@ void LoadSettingsFromEeprom() {
   Serial.println("Loading settings from EEPROM");
   mem.resetReadCounter();
   for (byte i = 0; i < NUM_WIFI_SETTINGS; i++) {
-    WifiSettings[i]->Val = mem.read(mem.getLastReadedByte(), MAX_LENGTH_SETTING);
+    WifiSettings[i]->Val = mem.read(mem.getLastReadedByte());
     Serial.println( WifiSettings[i]->Name + ": " +  WifiSettings[i]->Val);
   }
   Serial.println("Settings loaded!");

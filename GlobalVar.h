@@ -30,7 +30,7 @@
 #define JSON_MSG_LENGTH           32
 //----------------------------------------------------------------------------
 #define ProductKey                "fce33026-9a4d-47c1-a8fd-d6ff4d4cc135"
-#define Version                   "27.1.0.0"
+#define Version                   "30.1.0.0"
 #define MakeFirmwareInfo(k, v)    "&_FirmwareInfo&k=" k "&v=" v "&FirmwareInfo_&"
 //----------------------------------------------------------------------------
 bool pushButton                   = false;
