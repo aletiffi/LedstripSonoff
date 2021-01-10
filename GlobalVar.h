@@ -21,7 +21,7 @@
 //----------------------------------------------------------------------------
 #define EEPROM_SIZE               256
 //----------------------------------------------------------------------------
-#define NUM_WIFI_SETTINGS         8
+#define NUM_WIFI_SETTINGS         9
 #define MAX_LENGTH_SETTING        16
 //----------------------------------------------------------------------------
 #define ON_PAYLOAD                "ON"
@@ -29,8 +29,10 @@
 //----------------------------------------------------------------------------
 #define JSON_MSG_LENGTH           32
 //----------------------------------------------------------------------------
-#define ProductKey                "fce33026-9a4d-47c1-a8fd-d6ff4d4cc135"
-#define Version                   "30.1.0.0"
+#define Version                   "32.1.0.0"
+//----------------------------------------------------------------------------
+//---Per upload file .bin in OTA Drive non toccare----------------------------
+#define ProductKey                "abc12345-1a1a-12a1-a1ab-a1ab1a1ab123"
 #define MakeFirmwareInfo(k, v)    "&_FirmwareInfo&k=" k "&v=" v "&FirmwareInfo_&"
 //----------------------------------------------------------------------------
 bool pushButton                   = false;
@@ -68,6 +70,7 @@ WifiSetup MqttPubTopic       = {"MqttPubTopic", ""};
 WifiSetup MqttServer         = {"MqttServer", ""};
 WifiSetup MqttUser           = {"MqttUser", ""};
 WifiSetup MqttPassword       = {"MqttPassword", ""};
+WifiSetup OtaDriveProductKey = {"OtaDriveProductKey", ""};
 
 WifiSetup* WifiSettings[NUM_WIFI_SETTINGS] = {
   &Hostname, 
@@ -77,7 +80,8 @@ WifiSetup* WifiSettings[NUM_WIFI_SETTINGS] = {
   &MqttPubTopic,
   &MqttServer, 
   &MqttUser, 
-  &MqttPassword};
+  &MqttPassword,
+  &OtaDriveProductKey};
 
 struct RbgRandomEffect{
   String Name;

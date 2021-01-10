@@ -17,6 +17,7 @@ const char webPage[] PROGMEM = R"=====(
           border-radius: 5px;
           width: 100%;
           height: 40px;
+          box-sizing: border-box;
         }
         select {
           border-radius: 5px;
@@ -29,10 +30,9 @@ const char webPage[] PROGMEM = R"=====(
         }
         button {
           border-radius: 5px;
-          padding: 5px;
           width: 100%;
           height: 40px;
-          color:black; 
+          color:black;
         }
         .container {
           border-radius: 5px;
@@ -41,17 +41,22 @@ const char webPage[] PROGMEM = R"=====(
           max-width: 450px;
           background-color: rgb(62, 131, 131);
           margin: auto;
-        }.content-container {
+        }
+        .actions-container {
           width: 90%;
           max-width: 350px;
-          background-color: rgb(204, 218, 218));
+          margin: auto;
+        }
+        .settings-container {
+          width: 90%;
+          max-width: 350px;
           margin: auto;
         }
       </style>
     </head>
     <body>
       <div class="container">
-        <div class="content-container">
+        <div class="actions-container">
           <h1>Home Page</h1>
           <hr>
           <p>
@@ -63,9 +68,6 @@ const char webPage[] PROGMEM = R"=====(
           <hr>
           <h2>Color picker</h2>
           <input class="input" style="padding: 0%; height: 10ch;" type="color" id="colorWell" name="colorWell" value="#a366cc">
-          <p>
-            <br>
-          </p>
           <hr>
           <h2>Brigthness</h2>
           <input type="range" value="" id="brigthness" min="0" max="255" onchange="get_brigthness()">
@@ -75,10 +77,9 @@ const char webPage[] PROGMEM = R"=====(
             <option value="Solid">Solid</option> 
             <option value="Random">Random</option>
           </select>
-          <p>
-            <br>
-          </p>
           <hr>
+        </div>
+        <div class="settings-container">
           <h2>Settings</h2>
           <p>
             <label for="Hostname">Hostname</label>
@@ -90,7 +91,7 @@ const char webPage[] PROGMEM = R"=====(
             <label for="Ssid">Ssid</label>
           </p>
           <p>
-            <input value="" id="Ssid" placeholder="     Wifi Net to connect">
+            <input value="" id="Ssid" placeholder="     Wifi Net Name">
           </p>
           <p>
             <label for="Password">Password</label>
@@ -127,6 +128,12 @@ const char webPage[] PROGMEM = R"=====(
           </p>
           <p>
             <input type="password" value="" id="MQTT_Password" placeholder="     MQTT Password">
+          </p>
+          <p>  
+            <label for="OTA_DRIVE_KEY">Ota Drive Product Key</label>
+          </p>
+          <p>
+            <input value="" id="OTA_DRIVE_KEY" placeholder="     xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
           </p>
           <br>
           <p>
@@ -217,6 +224,7 @@ const char webPage[] PROGMEM = R"=====(
         var MQTT_Server = document.getElementById("MQTT_Server").value;
         var MQTT_User = document.getElementById("MQTT_User").value;
         var MQTT_Password = document.getElementById("MQTT_Password").value;
+        var OTA_DRIVE_KEY = document.getElementById("OTA_DRIVE_KEY").value;
   
         var data = {Hostname:Hostname,
                     Ssid:Ssid,
@@ -225,7 +233,8 @@ const char webPage[] PROGMEM = R"=====(
                     MQTT_Pub:MQTT_Pub,
                     MQTT_Server:MQTT_Server,
                     MQTT_User:MQTT_User,
-                    MQTT_Password:MQTT_Password};
+                    MQTT_Password:MQTT_Password,
+                    OTA_DRIVE_KEY:OTA_DRIVE_KEY};
   
         var xhr = new XMLHttpRequest();
         var url = "/settings";

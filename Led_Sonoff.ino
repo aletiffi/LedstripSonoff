@@ -718,9 +718,15 @@ void LoadSettingsFromEeprom() {
 }
 
 void OtaUpdate() {
+  //----------------------------------------------------------------------------
+  //---Per upload file .bin in OTA Drive non toccare----------------------------
+  String fake_url = "http://otadrive.com/DeviceApi/GetEsp8266Update?";
+  fake_url += "&s=" + mac;
+  fake_url += MakeFirmwareInfo(ProductKey, Version);
+  //----------------------------------------------------------------------------
+
   String url = "http://otadrive.com/DeviceApi/GetEsp8266Update?";
-  url += "&s=" + mac;
-  url += MakeFirmwareInfo(ProductKey, Version);
+  url += "&s=" + mac + "&_FirmwareInfo&k=" + OtaDriveProductKey.Val + "&v=" + Version + "&FirmwareInfo_&";
 
   Serial.println("Get firmware from url:");
   Serial.println(url);
