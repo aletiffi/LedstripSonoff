@@ -18,11 +18,14 @@ const char webPage[] PROGMEM = R"=====(
           width: 100%;
           height: 40px;
           box-sizing: border-box;
+          text-align: center;
         }
         select {
           border-radius: 5px;
           padding: 10px;
           width: 100%;
+          text-align: center;
+          text-align-last:center;
         }
         body {
           text-align: center;
@@ -69,8 +72,8 @@ const char webPage[] PROGMEM = R"=====(
           <h2>Color picker</h2>
           <input class="input" style="padding: 0%; height: 10ch;" type="color" id="colorWell" name="colorWell" value="#a366cc">
           <hr>
-          <h2>Brigthness</h2>
-          <input type="range" value="" id="brigthness" min="0" max="255" onchange="get_brigthness()">
+          <h2>Brightness</h2>
+          <input type="range" value="" id="Brightness" min="0" max="255" onchange="get_Brightness()">
           <hr>
           <h2>Effect Selector</h2>
           <select id="effect" onchange="get_effect()">
@@ -85,63 +88,68 @@ const char webPage[] PROGMEM = R"=====(
             <label for="Hostname">Hostname</label>
           </p>
           <p>
-            <input value="" id="Hostname" placeholder="     DeviceName">
+            <input value="" id="Hostname" placeholder="DeviceName" maxlength="20">
           </p>
           <p>  
             <label for="Ssid">Ssid</label>
           </p>
           <p>
-            <input value="" id="Ssid" placeholder="     Wifi Net Name">
+            <input value="" id="Ssid" placeholder="Wifi Net Name" maxlength="20">
           </p>
           <p>
             <label for="Password">Password</label>
           </p>
           <p>
-            <input type="password" value="" id="Password" placeholder="     Wifi Password">
+            <input type="password" value="" id="Password" placeholder="Wifi Password" maxlength="20">
           </p>
           <p>  
             <label for="MQTT_Sub">MQTT Subscribe topic</label>
           </p>
           <p>
-            <input value="" id="MQTT_Sub" placeholder="     cmnd/MyDevice">
+            <input value="" id="MQTT_Sub" placeholder="cmnd/MyDevice" maxlength="20">
           </p>
           <p>  
             <label for="MQTT_Pub">MQTT Publish topic</label>
           </p>
           <p>
-            <input value="" id="MQTT_Pub" placeholder="     stat/MyDevice">
+            <input value="" id="MQTT_Pub" placeholder="stat/MyDevice" maxlength="20">
           </p>
           <p>  
             <label for="MQTT_Server">MQTT Server</label>
           </p>
           <p>
-            <input value="" id="MQTT_Server" placeholder="     192.168.1.100">
+            <input value="" id="MQTT_Server" placeholder="192.168.1.100" maxlength="20">
           </p>
           <p>
             <label for="MQTT_User">MQTT User</label>
           </p>
           <p>
-            <input value="" id="MQTT_User" placeholder="     MQTT User">
+            <input value="" id="MQTT_User" placeholder="MQTT User" maxlength="20">
           </p>
           <p>  
             <label for="MQTT_Password">MQTT Password</label>
           </p>
           <p>
-            <input type="password" value="" id="MQTT_Password" placeholder="     MQTT Password">
+            <input type="password" value="" id="MQTT_Password" placeholder="MQTT Password" maxlength="20">
           </p>
           <p>  
             <label for="OTA_DRIVE_KEY">Ota Drive Product Key</label>
           </p>
           <p>
-            <input value="" id="OTA_DRIVE_KEY" placeholder="     xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+            <input value="" id="OTA_DRIVE_KEY" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" maxlength="36">
           </p>
           <br>
           <p>
-            <button type="button" id="savebtn" style="background-color: cornflowerblue;" onclick="save()">Save</button>
+            <button type="button" id="savebtn" style="background-color: cornflowerblue;" onclick="save()">Save Settings</button>
           </p>
           <hr>
           <p>
-            <a href="/restart"><button style="background-color: rgb(170, 20, 216);">Restart</button></a>
+            <a href="/restart"><button style="background-color: rgb(216, 196, 20);">Restart Device</button></a>
+          </p>
+          <hr>
+          <p>
+            <!-- <a href="/clean"><button style="background-color: rgb(189, 0, 0);">Clean EEPROM</button></a> -->
+            <button style="background-color: rgb(189, 0, 0);" onclick="eepromConfirm()">Clean EEPROM</button>
           </p>
           <hr>
         </div>
@@ -161,9 +169,9 @@ const char webPage[] PROGMEM = R"=====(
         colorWell.select();
       }
 
-      function get_brigthness(){
-        var brigthness = document.getElementById("brigthness").value;
-        var data = {brigthness:brigthness};
+      function get_Brightness(){
+        var Brightness = document.getElementById("Brightness").value;
+        var data = {Brightness:Brightness};
   
         var xhr = new XMLHttpRequest();
         var url = "/brigthness";
@@ -249,6 +257,12 @@ const char webPage[] PROGMEM = R"=====(
         xhr.open("POST", url, true);
         xhr.send(JSON.stringify(data));
       };
+
+      function eepromConfirm() {
+        if (confirm("Are you sure to clean all EEPROM?")) {
+          window.location.href = '/clean';
+        }
+      }
     </script>
   
   </html>

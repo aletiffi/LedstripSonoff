@@ -3,3 +3,6 @@ data/Switch_Sonoff.ino.i
 data/HomePage.h.i
 data/Led_Sonoff.ino.i
 data/ConfigurationExample.yaml.i
+data/GPIO_note.txt.i
+data/Calcolo spazio in EEPROM per suddivisione.xlsx.i
+data/delete retained msg.txt.i
