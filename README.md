@@ -20,5 +20,5 @@ Ora il dispositivo è connesso alla rete locale, ed è possibile inserire i para
 Inserendo il ProductKey di OTA Drive sarà possibile gestire tramite questa piattaforma l'aggiornamento dei futuri firmware senza flashare il dispositivo fisicamente.
 
 <p align="center">
-  <img src="https://github.com/aletiffi/Led_Sonoff/img/Settings.PNG" alt="Settings"/>
+  <img src="https://github.com/aletiffi/Led_Sonoff/blob/main/img/Settings.PNG" alt="Settings"/>
 </p>
