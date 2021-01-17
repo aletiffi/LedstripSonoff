@@ -15,9 +15,9 @@
 #define T_100MS                   100
 #define T_200MS                   200
 #define T_250MS                   250
-#define T_1S                      1000        // Delay cambio programma
+#define T_1S                      1000        // Delay change function
 #define T_5S                      5000
-#define T_5MIN                    300000      // Controllo connessione ogni 5 min
+#define T_5MIN                    300000      // Connection check every 5 min
 //----------------------------------------------------------------------------
 #define SETTIGNS_EEPROM_SIZE      230
 #define STATE_EEPROM_SIZE         26
@@ -34,9 +34,9 @@
 #define NULL_CHAR                 '\0'
 #define DEFAULT_AP_NAME           "SonoffLedStrip"
 //----------------------------------------------------------------------------
-#define Version                   "36.1.0.0"
+#define Version                   "42.1.0.0"
 //----------------------------------------------------------------------------
-//---Per upload file .bin in OTA Drive non toccare----------------------------
+  //---To be able to change product key---------------------------------------
 #define ProductKey                "abc12345-1a1a-12a1-a1ab-a1ab1a1ab123"
 #define MakeFirmwareInfo(k, v)    "&_FirmwareInfo&k=" k "&v=" v "&FirmwareInfo_&"
 //----------------------------------------------------------------------------

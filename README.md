@@ -31,7 +31,6 @@ Now the device is connected to the local network, and it is possible to enter th
 
 If the OTA Drive ProductKey is present, it is possible to manage the updating of future firmware with this platform without having to flash the device by hand.
 
-
 **Integrated button functionality**
 -----------------------------------------
 While holding the Sonoff button, the LED will flash once per second. Based on the number of flashes reached at release, one of the following functions will be activated.
@@ -46,3 +45,7 @@ While holding the Sonoff button, the LED will flash once per second. Based on th
 - 8:  EEPROM clean
 - 9:  Read all EEPROM (for debug purpose)
 - 10: Sonoff restart
+
+**Info**
+-----------------------------------------
+Within this repository there is the .bin file to be installed in the Sonoff. If you want to recompile or modify the code you have to download the DigiOut, ReadInput and StoreStrings libraries that you find in my repositories.

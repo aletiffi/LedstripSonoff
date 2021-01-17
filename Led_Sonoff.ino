@@ -76,9 +76,8 @@ void loop() {
   server.handleClient();
   mdns.update();
 
-  // Controllo connessione
+  // Connection check
   if (wifiConfigured && millis() - lastTimeCheckConn > T_5MIN) {
-    // Blink di check connessione
     Serial.print("Connection check... ");
     Led.Off();
     delay(T_200MS);
@@ -89,12 +88,12 @@ void loop() {
     } else {
       Serial.println("OK");
       OtaUpdate();
-      // Accendo led di conferma connessione alla rete
+      // Turns on the LED for network connection confirmation
       Led.On();
     }
   }
 
-  // Controllo presione pulsante multifunzione
+  // Multifunction button pressure control
   pushButton = !Button.State();
 
   if (pushButton && !pushButtonPre) {
@@ -131,39 +130,39 @@ void RgbEffectPlay() {
   if (RGB_Efect_Selected == Random.Effect_Number) {
     switch (RandomEffectStep) {
       case 0:
-        // Alza il rosso al max
+        // Red channel at max
         Red.Val = RgbChannelManager(Red.Val, Random_Effects[0]->TargetVal, INCREMENT_STEP);
         break;
       case 1:
-        // Alza il verde al max
+        // Green channel at max
         Green.Val = RgbChannelManager(Green.Val, Random_Effects[1]->TargetVal, INCREMENT_STEP);
         break;
       case 2:
-        // Alza il blu al max
+        // Blue channel at max
         Blue.Val = RgbChannelManager(Blue.Val, Random_Effects[2]->TargetVal, INCREMENT_STEP);
         break;
       case 3:
-        // Abbassa il rosso al max
+        // Red channel at min
         Red.Val = RgbChannelManager(Red.Val, Random_Effects[3]->TargetVal, INCREMENT_STEP);
         break;
       case 4:
-        // Abbassa il verde al max
+        // Green channel at min
         Green.Val = RgbChannelManager(Green.Val, Random_Effects[4]->TargetVal, INCREMENT_STEP);
         break;
       case 5:
-        // Abbassa il blu al max
+        // Blue channel at min
         Blue.Val = RgbChannelManager(Blue.Val, Random_Effects[5]->TargetVal, INCREMENT_STEP);
         break;
       case 6:
-        // Canale rosso a metà
+        // Half value red channel
         Red.Val = RgbChannelManager(Red.Val, Random_Effects[6]->TargetVal, INCREMENT_STEP);
         break;
       case 7:
-        // Canale verde a metà
+        // Half value green channel
         Green.Val = RgbChannelManager(Green.Val, Random_Effects[7]->TargetVal, INCREMENT_STEP);
         break;
       case 8:
-        // Canale blu a metà
+        // Half value blue channel
         Blue.Val = RgbChannelManager(Blue.Val, Random_Effects[8]->TargetVal, INCREMENT_STEP);
         break;
       default:
@@ -176,21 +175,21 @@ void RgbEffectPlay() {
 
 byte RgbChannelManager(byte channelVal, byte targetVal, byte incStep) {
   if (channelVal < targetVal) {
-    // Aumenta
+    // Increase
     if ((targetVal - channelVal) < incStep) {
       return targetVal;
     } else {
       return channelVal += incStep;
     }
   } else if (channelVal > targetVal) {
-    // Diminuisce
+    // Decrease
     if (channelVal < incStep) {
       return targetVal;
     } else {
       return channelVal -= incStep;
     }
   } else {
-    // Cambia
+    // Change
     RandomEffectStep = RandomEffectStepSelector();
     return channelVal;
   }
@@ -198,7 +197,7 @@ byte RgbChannelManager(byte channelVal, byte targetVal, byte incStep) {
 
 byte RandomEffectStepSelector() {
   byte randSelection = random(0, RGB_COMBO_NUM);
-  // Controlla che non vengano spenti tutti i canali
+  // Verifies that not all channels are disabled
   while ((Random_Effects[randSelection]->TargetVal == 0 ) && ((Red.Val == 0 && Green.Val == 0) || (Red.Val == 0 && Blue.Val == 0) || (Blue.Val == 0 && Green.Val == 0))) {
     randSelection = random(0, RGB_COMBO_NUM);
   }
@@ -281,7 +280,7 @@ void Switch_On() {
   if (Rele.State() == OFF_RELAY) {
     Rele.On();
     SwitchState.Val = 1;
-    // Riardo per stabilizzazione alimentazione
+    // Power delay
     delay(T_1S);
   }
   SetLedStrip(Red.Val, Green.Val, Blue.Val, Brightness.Val);
@@ -413,7 +412,7 @@ void ShowIpAddr() {
   } else {
 
     Serial.println("Not connected!");
-    // Lampeggio connessione fallita
+    // Connection failed
     Led.Blink(T_200MS, 10, T_100MS);
   }
 }
@@ -506,20 +505,20 @@ void Connection_Manager() {
     client.setServer(MqttServer.Val.c_str(), 1883);
     client.setCallback(Callback);
 
-    // Accendo led per indicare l'avvenuta connessione
+    // Successful connection
     Led.On();
     deviceConnected = true;
 
   } else {
     Serial.println("Not connected!");
-    // Lampeggio connessione fallita
+    // Connection failed
     Led.Blink(T_200MS, 10, T_100MS);
-    // Lascio spento il led per indicare l'assenza di connessione
+    // Keeps the led off
     Led.Off();
     deviceConnected = false;
   }
 
-  // Configurazione AP e webServer
+  // WebServer configuration
   if (Hostname.Val == "" || Hostname.Val.startsWith(" ") || Hostname.Val.length() >= MAX_LENGTH_SETTING) {
     Hostname.Val = DEFAULT_AP_NAME;
   }
@@ -554,7 +553,7 @@ void Connection_Manager() {
   server.onNotFound(handleNotFound);
   server.begin();
 
-  // Azzero ultimo tempo di connessione
+  // Reset last connection time
   lastTimeCheckConn = millis();
 }
 
@@ -749,7 +748,7 @@ void LoadLedStripStateFromEeprom() {
 
 void OtaUpdate() {
   //----------------------------------------------------------------------------
-  //---Per upload file .bin in OTA Drive non toccare----------------------------
+  //---To be able to change product key-----------------------------------------
   String fake_url = "http://otadrive.com/DeviceApi/GetEsp8266Update?";
   fake_url += "&s=" + mac;
   fake_url += MakeFirmwareInfo(ProductKey, Version);
