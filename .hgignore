@@ -1,6 +1,0 @@
-syntax: glob
-.hgignore
-.vs/
-.vscode/settings.json
-.git/
-.gitattributes
