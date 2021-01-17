@@ -1,46 +1,48 @@
-Sonoff Ledstrip Controller
+**Sonoff Ledstrip Controller**
 =======================
-Con questo firmware il Sonoff può comunicare tramite protocollo MQTT con un broker, e in modalità stand-alone accedendo alla homepage del dispositivo. Una volta connesso alla rete wifi sarà accessibile in localhost o all'indirizzo 192.168.4.1 collegandosi alla sua rete wifi.
+By installing this firmware you can control a led strip with a Sonoff. This Sonoff can communicate via MQTT protocol with a broker like mosquitto, and in stand-alone mode by accessing the device homepage. Once connected to your wifi network it will be accessible in localhost or at 192.168.4.1 by connecting to its wifi network.
 
 <p align="center">
   <img src="https://github.com/aletiffi/Led_Sonoff/blob/main/img/HomePage.PNG" alt="Settings"/>
 </p>
 
-Collegamenti
+**Wirings**
 -----------------------------------------
-In questo progetto viene utilizzato un Sonoff r1, una striscia a led ws2812b ed un alimentatore, dimensionato opportunamente per il carico richiesto dalla striscia a led.
+In this project a Sonoff r1 is used, a ws2812b led strip and a power supply, suitably sized for the load required by the led strip.
 
 <p align="center">
   <img src="https://github.com/aletiffi/Led_Sonoff/blob/main/img/Schema.png" alt="Settings"/>
 </p>
 
-Setup
+**Setup**
 -----------------------------------------
-Caricato il firmware, al primo avvio la EEPROM viene cancellata, e viene assegnato al dispositivo un nome di default.
+Once the firmware has been loaded, the EEPROM is deleted at the first start, and a default name is assigned to the device.
 
-Una volta connessi alla rete wifi con il nome di defalut del dispositivo, aprire il browser all'indirizzo 192.168.4.1. Rinominare il dispositivo quindi inserire il nome della rete wifi e la password al quale deve connettersi. Le altre impostazioni possono essere inserite in un secondo momento. Premendo il pulsante `Save Settings` in fondo alla pagina il Sonoff viene riavviato, quindi cerca di connettersi alla rete impostata.
+Once connected to the wifi network named **SonoffLedStrip** (default name) open the browser at 192.168.4.1. Rename the device then enter the name of the wifi network and the password to which it must connect. The other settings can be entered later. By pressing the `Save Settings` button at the bottom of the page the Sonoff restarts, then tries to connect to your network.
 
 <p align="center">
   <img src="https://github.com/aletiffi/Led_Sonoff/blob/main/img/Settings.PNG" alt="Settings"/>
 </p>
 
-L'avvenuta connessione è indicata dall'accensione del led integrato, nel caso in cui non si accenda il segnale potrebbe essere troppo debole, per riavviare il processo di connessione tenere premuto il pulsante fino ai 2 blink del led.
+The integrated led indicates successful connection to the wifi network.
+If the LED does not light up, the network signal may be too weak, to restart the connection process press and hold the button until the LED flashes 2 times.
 
-Ora il dispositivo è connesso alla rete locale, ed è possibile inserire i parametri MQTT tramite la pagina web raggiungibile in localhost, inserendo nel browser `NOMEDISPOSITIVO.local`.
+Now the device is connected to the local network, and it is possible to enter the MQTT parameters through the web page reachable in localhost, by entering `HostName.local` in the browser.
 
-Inserendo il ProductKey di OTA Drive sarà possibile gestire tramite questa piattaforma l'aggiornamento dei futuri firmware senza flashare il dispositivo fisicamente.
+If the OTA Drive ProductKey is present, it is possible to manage the updating of future firmware with this platform without having to flash the device by hand.
 
-Funzionalità del pulsante integrato
+
+**Integrated button functionality**
 -----------------------------------------
-Mantenendo premuto il pulsante del Sonoff il led eseguirà un lampeggio al secondo. In base al numero di lampeggi raggiunti al rilascio si attiverà una delle seguenti funzioni.
+While holding the Sonoff button, the LED will flash once per second. Based on the number of flashes reached at release, one of the following functions will be activated.
 
 - 1:  Toggle
 - 2:  Connection check
 - 3:  Check FW update
-- 4:  Show ip address
+- 4:  Show ip address (number of flashes equal to the last IP number)
 - 5:  Wifi signal power
-- 6:  Load settings
-- 7:  Save settings
+- 6:  Load settings (for debug purpose)
+- 7:  Save settings (for debug purpose)
 - 8:  EEPROM clean
-- 9:  Read all EEPROM
+- 9:  Read all EEPROM (for debug purpose)
 - 10: Sonoff restart
