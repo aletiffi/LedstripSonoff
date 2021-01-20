@@ -34,7 +34,7 @@
 #define NULL_CHAR                 '\0'
 #define DEFAULT_AP_NAME           "SonoffLedStrip"
 //----------------------------------------------------------------------------
-#define Version                   "42.1.0.0"
+#define Version                   "43.1.0.0"
 //----------------------------------------------------------------------------
   //---To be able to change product key---------------------------------------
 #define ProductKey                "abc12345-1a1a-12a1-a1ab-a1ab1a1ab123"
