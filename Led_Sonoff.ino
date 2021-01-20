@@ -32,6 +32,7 @@ void setup() {
 
   Rele.Begin();
   Led.Begin();
+  Led.Blink(T_100MS * 5, 1, T_100MS * 5);
   pinMode(SONOFF_LEDSTRIP, OUTPUT);
   FastLED.addLeds<WS2811, SONOFF_LEDSTRIP, BRG>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
 
@@ -61,7 +62,7 @@ void loop() {
       if (millis() - lastMqttCheckConn > T_5S) {
         Serial.print("Connecting Mqtt client... ");
         lastMqttCheckConn = millis();
-        // Prova a riconnettere
+        // Try to reconnect
         if (client.connect(Hostname.Val.c_str(), MqttUser.Val.c_str(), MqttPassword.Val.c_str())) {
           lastMqttCheckConn = 0;
           client.subscribe(MqttSubTopic.Val.c_str());
