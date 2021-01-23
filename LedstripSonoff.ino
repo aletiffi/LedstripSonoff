@@ -23,7 +23,7 @@ StoreStrings mem(SETTIGNS_EEPROM_SIZE, STATE_EEPROM_SIZE);
 CRGB leds[NUM_LEDS];
 
 void setup() {
-  Serial.begin(115200);
+  Sbegin(115200);
   delay(T_250MS);
 
   if (!mem.isReady()) {
@@ -41,8 +41,8 @@ void setup() {
   FastLED.clear();
   FastLED.show();
 
-  Serial.println("\n----------------------");
-  Serial.println("Application ver. " + String(Version) + " running!");
+  Sprintln("\n----------------------");
+  Sprintln("Application ver. " + String(FW_VERSION) + " running!");
   LoadLedStripStateFromEeprom();
   if (SwitchState.Val == 1) {
     Rele.On();
@@ -50,6 +50,7 @@ void setup() {
   } else {
     Rele.Off();
   }
+  BuildFakeUrl();
   Connection_Manager();
   randomSeed(millis());
 }
@@ -60,16 +61,16 @@ void loop() {
       client.loop();
     } else {
       if (millis() - lastMqttCheckConn > T_5S) {
-        Serial.print("Connecting Mqtt client... ");
+        Sprint("Connecting Mqtt client... ");
         lastMqttCheckConn = millis();
         // Try to reconnect
         if (client.connect(Hostname.Val.c_str(), MqttUser.Val.c_str(), MqttPassword.Val.c_str())) {
           lastMqttCheckConn = 0;
           client.subscribe(MqttSubTopic.Val.c_str());
-          Serial.println("Ok");
+          Sprintln("Ok");
           PublishState();
         } else {
-          Serial.println("Failed");
+          Sprintln("Failed");
         }
       }
     }
@@ -79,7 +80,7 @@ void loop() {
 
   // Connection check
   if (wifiConfigured && millis() - lastTimeCheckConn > T_5MIN) {
-    Serial.print("Connection check... ");
+    Sprint("Connection check... ");
     Led.Off();
     delay(T_200MS);
     lastTimeCheckConn = millis();
@@ -87,7 +88,7 @@ void loop() {
     if (WiFi.status() != WL_CONNECTED) {
       Connection_Manager();
     } else {
-      Serial.println("OK");
+      Sprintln("OK");
       OtaUpdate();
       PublishState();
       // Turns on the LED for network connection confirmation
@@ -113,7 +114,7 @@ void loop() {
   pushButtonPre = pushButton;
 
   if (pushButton) {
-    if (millis() - pushButtonTime > (T_1S - T_100MS)) {
+    if (millis() - pushButtonTime > (T_1S)) {
       pushButtonTime = millis();
       Led.Blink(T_200MS, 1, T_100MS);
       pushButtonCount ++;
@@ -207,52 +208,52 @@ byte RandomEffectStepSelector() {
 }
 
 void PushButtonFunction(int func) {
-  Serial.print("Function: " + String(func) + " -> ");
+  Sprint("Function: " + String(func) + " -> ");
   switch (func) {
     case 1:
-      Serial.println("Toggle");
+      Sprintln("Toggle");
       delay(T_250MS);
       Switch_Toggle();
       break;
     case 2:
-      Serial.println("Connection check");
+      Sprintln("Connection check");
       delay(T_250MS);
       Connection_Manager();
       break;
     case 3:
-      Serial.println("Check FW update");
+      Sprintln("Check FW update");
       OtaUpdate();
       break;
     case 4:
-      Serial.println("Show ip address");
+      Sprintln("Show ip address");
       ShowIpAddr();
       break;
     case 5:
-      Serial.println("Wifi signal power");
+      Sprintln("Wifi signal power");
       getWifiPower(Ssid.Val);
       break;
     case 6:
-      Serial.println("Load settings");
+      Sprintln("Load settings");
       LoadSettingsFromEeprom();
       break;
     case 7:
-      Serial.println("Save settings");
+      Sprintln("Save settings");
       SaveSettingsInEeprom();
       break;
     case 8:
-      Serial.println("EEPROM clean");
+      Sprintln("EEPROM clean");
       CleanEEPROM();
       break;
     case 9:
-      Serial.println("Read all EEPROM");
+      Sprintln("Read all EEPROM");
       mem.print_all();
       break;
     case 10:
-      Serial.println("Sonoff restart");
+      Sprintln("Sonoff restart");
       Restart();
       break;
     default:
-      Serial.println("No function!");
+      Sprintln("No function!");
       Led.Blink(T_200MS, 5, T_100MS);
       break;
   }
@@ -265,14 +266,14 @@ void SetLedStrip(byte red, byte green, byte blue, byte brightness) {
   FastLED.show();
   FastLED.setBrightness(brightness);
   FastLED.show();
-  Serial.println("LedStrip updated -> R:" + String(red) + " G:" + String(green) + " B:" + String(blue) + " Brightness:" + String(brightness));
+  Sprintln("LedStrip updated -> R:" + String(red) + " G:" + String(green) + " B:" + String(blue) + " Brightness:" + String(brightness));
   if (deviceConnected && RGB_Efect_Selected == Solid.Effect_Number) {
     PublishState();
   }
 }
 
 void Restart() {
-  Serial.println("Restart");
+  Sprintln("Restart");
   delay(T_250MS);
   Led.Blink(T_200MS, 5, T_100MS);
   ESP.restart();
@@ -326,25 +327,25 @@ void PublishState() {
   }
   serializeJson(doc, msg_out);
   if (client.publish(MqttPubTopic.Val.c_str(), msg_out)) {
-    Serial.print("Message published: ");
-    Serial.println(msg_out);
+    Sprint("Message published: ");
+    Sprintln(msg_out);
   } else {
-    Serial.println("Message publishing error");
+    Sprintln("Message publishing error");
   }
 }
 
 void Callback(char *topic, byte *payload, unsigned int length) {
   DynamicJsonDocument doc(JSON_MSG_LENGTH);
-  Serial.print("Payload recived: ");
+  Sprint("Payload recived: ");
   for (byte i = 0; i < length; i++) {
-    Serial.print(char(payload[i]));
+    Sprint(char(payload[i]));
   }
-  Serial.println("");
+  Sprintln("");
 
   if ((String(topic) == MqttSubTopic.Val) && (length > 5)) {
     const char* stat;
     String state;
-    Serial.println("Command/s on payload: ");
+    Sprintln("Command/s on payload: ");
     deserializeJson(doc, payload, length);
     JsonObject root = doc.as<JsonObject>();
 
@@ -354,30 +355,30 @@ void Callback(char *topic, byte *payload, unsigned int length) {
       if (key.equals("state")) {
         stat = doc["state"];
         state = String(stat);
-        Serial.println("  - state = " + state);
+        Sprintln("  - state = " + state);
 
       } else if (key.equals("brightness")) {
         Brightness.Val = doc["brightness"];
-        Serial.println("  - Brightness = " + String(Brightness.Val));
+        Sprintln("  - Brightness = " + String(Brightness.Val));
 
       } else if (key.equals("color")) {
         JsonObject color = doc["color"];
         Red.Val = color["r"];
         Green.Val = color["g"];
         Blue.Val = color["b"];
-        Serial.println("  - color = R:" + String(Red.Val) + " G:" + String(Green.Val) + " B:"  + String(Blue.Val));
+        Sprintln("  - color = R:" + String(Red.Val) + " G:" + String(Green.Val) + " B:"  + String(Blue.Val));
 
       } else if (key.equals("effect")) {
         String effect = doc["effect"];
         for (byte i = 0; i < RGB_EFFECTS_NUM; i++) {
           if (effect.equals(RbgEffects[i]->Effect_Name)) {
             RGB_Efect_Selected = RbgEffects[i]->Effect_Number;
-            Serial.println("  - effect = " + effect);
+            Sprintln("  - effect = " + effect);
           }
         }
 
       } else {
-        Serial.println("  - Key unknown recived = " + key + kv.value().as<char*>());
+        Sprintln("  - Key unknown recived = " + key + kv.value().as<char*>());
       }
     }
 
@@ -397,7 +398,7 @@ void ShowIpAddr() {
     String ipNumStr = "0";
     byte ipNum = 0;
 
-    Serial.println(ip);
+    Sprintln(ip);
     for (int i = 0; i < ip.length(); i++) {
       if (ip.charAt(i) == '.') {
         numIterations++;
@@ -413,7 +414,7 @@ void ShowIpAddr() {
 
   } else {
 
-    Serial.println("Not connected!");
+    Sprintln("Not connected!");
     // Connection failed
     Led.Blink(T_200MS, 10, T_100MS);
   }
@@ -432,35 +433,35 @@ bool getWifiPower(String netName) {
       if (String(WiFi.SSID(i)) == netName) {
         result = true;
         int rawPower = WiFi.RSSI(i);
-        Serial.print(WiFi.SSID(i));
-        Serial.print(" (");
-        Serial.print(rawPower);
-        Serial.print(")");
+        Sprint(WiFi.SSID(i));
+        Sprint(" (");
+        Sprint(rawPower);
+        Sprint(")");
         if (minRawLevel <= rawPower && rawPower <= maxRawLevel) {
           int power = map(rawPower, minRawLevel, maxRawLevel, minLevel, maxLevel);
           switch (power) {
             case 0:
-              Serial.println(" Unreacheable");
+              Sprintln(" Unreacheable");
               break;
             case 1:
-              Serial.println(" Very Low");
+              Sprintln(" Very Low");
               break;
             case 2:
-              Serial.println(" Low");
+              Sprintln(" Low");
               break;
             case 3:
-              Serial.println(" Good");
+              Sprintln(" Good");
               break;
             case 4:
-              Serial.println(" High");
+              Sprintln(" High");
               break;
             case 5:
-              Serial.println(" Very High!");
+              Sprintln(" Very High!");
               break;
           }
           Led.Blink(T_200MS, power, T_200MS);
         } else {
-          Serial.println(" Signal level out of bounds");
+          Sprintln(" Signal level out of bounds");
         }
       }
     }
@@ -469,7 +470,7 @@ bool getWifiPower(String netName) {
 }
 
 void Connection_Manager() {
-  Serial.println("Connection process started");
+  Sprintln("Connection process started");
   WiFi.softAPdisconnect(true);
   WiFi.disconnect();
   delay(T_200MS);
@@ -480,7 +481,7 @@ void Connection_Manager() {
   if (Ssid.Val != NULL_CHAR && Password.Val != NULL_CHAR) {
     if (getWifiPower(Ssid.Val)) {
       WiFi.begin(Ssid.Val, Password.Val);
-      Serial.println("Connecting to: " + String(Ssid.Val));
+      Sprintln("Connecting to: " + String(Ssid.Val));
       byte numCehck = 0;
       while ((WiFi.status() != WL_CONNECTED)) {
         if (numCehck >= 150) {
@@ -494,7 +495,8 @@ void Connection_Manager() {
   }
 
   if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("Connected!");
+    Sprintln("Connected!");
+    // Only on first connection
     if (mac.equals("")) {
       String macTemp = String(WiFi.macAddress());
       for (byte i = 0; i < macTemp.length(); i++) {
@@ -502,8 +504,9 @@ void Connection_Manager() {
           mac += macTemp.charAt(i);
         }
       }
+      OtaUpdate();
     }
-    Serial.println("IP: " + WiFi.localIP().toString() + " Mac: " + String(WiFi.macAddress()));
+    Sprintln("IP: " + WiFi.localIP().toString() + " Mac: " + String(WiFi.macAddress()));
     client.setServer(MqttServer.Val.c_str(), 1883);
     client.setCallback(Callback);
 
@@ -512,7 +515,7 @@ void Connection_Manager() {
     deviceConnected = true;
 
   } else {
-    Serial.println("Not connected!");
+    Sprintln("Not connected!");
     // Connection failed
     Led.Blink(T_200MS, 10, T_100MS);
     // Keeps the led off
@@ -524,7 +527,7 @@ void Connection_Manager() {
   if (Hostname.Val == "" || Hostname.Val.startsWith(" ") || Hostname.Val.length() >= MAX_LENGTH_SETTING) {
     Hostname.Val = DEFAULT_AP_NAME;
   }
-  Serial.println("AP Name: " + Hostname.Val);
+  Sprintln("AP Name: " + Hostname.Val);
 
   WiFi.softAP(Hostname.Val.c_str());
   mdns.begin(Hostname.Val, WiFi.localIP());
@@ -577,14 +580,14 @@ void handleNotFound() {
 void ChangeBrightness() {
   DynamicJsonDocument doc(JSON_MSG_LENGTH);
   String data = server.arg("plain");
-  Serial.print("Brightness recived: ");
+  Sprint("Brightness recived: ");
   deserializeJson(doc, data);
   JsonObject root = doc.as<JsonObject>();
   for (JsonPair kv : root) {
     String key = kv.key().c_str();
     if (key.equals("Brightness")) {
       String brigthness = doc["Brightness"];
-      Serial.println(brigthness);
+      Sprintln(brigthness);
       Brightness.Val = brigthness.toInt();
       SetLedStrip(Red.Val, Green.Val, Blue.Val, Brightness.Val);
     }
@@ -594,7 +597,7 @@ void ChangeBrightness() {
 void ChangeEffect() {
   DynamicJsonDocument doc(JSON_MSG_LENGTH);
   String data = server.arg("plain");
-  Serial.print("Effect recived: ");
+  Sprint("Effect recived: ");
   deserializeJson(doc, data);
   JsonObject root = doc.as<JsonObject>();
   for (JsonPair kv : root) {
@@ -604,7 +607,7 @@ void ChangeEffect() {
       for (byte i = 0; i < RGB_EFFECTS_NUM; i++) {
         if (effect.equals(RbgEffects[i]->Effect_Name)) {
           RGB_Efect_Selected = RbgEffects[i]->Effect_Number;
-          Serial.println(effect);
+          Sprintln(effect);
         }
       }
     }
@@ -614,7 +617,7 @@ void ChangeEffect() {
 void ChangeColor() {
   DynamicJsonDocument doc(JSON_MSG_LENGTH);
   String data = server.arg("plain");
-  Serial.print("Color recived: ");
+  Sprint("Color recived: ");
   deserializeJson(doc, data);
   JsonObject root = doc.as<JsonObject>();
   for (JsonPair kv : root) {
@@ -625,10 +628,10 @@ void ChangeColor() {
         Red.Val = HexString2Byte(color.substring(1, 3));
         Green.Val = HexString2Byte(color.substring(3, 5));
         Blue.Val = HexString2Byte(color.substring(5, color.length()));
-        Serial.println(color + " -> R: " + String(Red.Val) + " G: " + String(Green.Val) + " B: " + String(Blue.Val));
+        Sprintln(color + " -> R: " + String(Red.Val) + " G: " + String(Green.Val) + " B: " + String(Blue.Val));
         SetLedStrip(Red.Val, Green.Val, Blue.Val, Brightness.Val);
       } else {
-        Serial.println(color + " -> unable to decode");
+        Sprintln(color + " -> unable to decode");
       }
     }
   }
@@ -682,8 +685,8 @@ byte char2byte (char c) {
 void ChangeSettings() {
   DynamicJsonDocument doc(512);
   String data = server.arg("plain");
-  Serial.println("Parameters recived:");
-  Serial.println(data);
+  Sprintln("Parameters recived:");
+  Sprintln(data);
   deserializeJson(doc, data);
   JsonObject root = doc.as<JsonObject>();
   for (JsonPair kv : root) {
@@ -710,11 +713,11 @@ void SaveSettingsInEeprom() {
 }
 
 void LoadSettingsFromEeprom() {
-  Serial.println("Loading settings from EEPROM... ");
+  Sprintln("Loading settings from EEPROM... ");
   mem.resetReadCounter();
   for (byte i = 0; i < NUM_WIFI_SETTINGS; i++) {
     WifiSettings[i]->Val = mem.read(mem.getLastReadedByte());
-    Serial.println( WifiSettings[i]->Name + ": " +  WifiSettings[i]->Val);
+    Sprintln(WifiSettings[i]->Name + ": " +  WifiSettings[i]->Val);
   }
 
   if ( MqttSubTopic.Val != NULL_CHAR && MqttPubTopic.Val != NULL_CHAR && MqttServer.Val != NULL_CHAR &&
@@ -739,43 +742,43 @@ void SaveLedStripStateInEeprom() {
 }
 
 void LoadLedStripStateFromEeprom() {
-  Serial.println("Loading last state from EEPROM");
+  Sprintln("Loading last state from EEPROM");
   mem.resetReadCounter2();
   for (byte i = 0; i < NUM_STATE_SETTINGS; i++) {
     StateSettings[i]->Val = mem.read_pt2(mem.getLastReadedByte2()).toInt();
-    Serial.print( StateSettings[i]->Name + ": " +  StateSettings[i]->Val + " ");
+    Sprint(StateSettings[i]->Name + ": " +  StateSettings[i]->Val + " ");
   }
-  Serial.println("");
+  Sprintln("");
+}
+
+void BuildFakeUrl(){
+  // To be able to change product key
+  String fake_url = "http://otadrive.com/DeviceApi/GetEsp8266Update?";
+  fake_url += "&s=" + mac;
+  fake_url += FW_URL_MKR(FAKE_API_KEY, FW_VERSION);
 }
 
 void OtaUpdate() {
-  //----------------------------------------------------------------------------
-  //---To be able to change product key-----------------------------------------
-  String fake_url = "http://otadrive.com/DeviceApi/GetEsp8266Update?";
-  fake_url += "&s=" + mac;
-  fake_url += MakeFirmwareInfo(ProductKey, Version);
-  //----------------------------------------------------------------------------
-
   String url = "http://otadrive.com/DeviceApi/GetEsp8266Update?";
-  url += "&s=" + mac + "&_FirmwareInfo&k=" + OtaDriveProductKey.Val + "&v=" + Version + "&FirmwareInfo_&";
+  url += "&s=" + mac + "&_FirmwareInfo&k=" + OtaDriveProductKey.Val + "&v=" + FW_VERSION + "&FirmwareInfo_&";
 
-  Serial.println("Get firmware from url:");
-  Serial.println(url);
+  Sprintln("Get firmware from url:");
+  Sprintln(url);
 
-  t_httpUpdate_return ret = ESPhttpUpdate.update(espClient, url, Version);
+  t_httpUpdate_return ret = ESPhttpUpdate.update(espClient, url, FW_VERSION);
   switch (ret)
   {
     case HTTP_UPDATE_FAILED:
-      Serial.printf("Update Faild, Error: (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+      Sprintf("Update Faild, Error: (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
       break;
     case HTTP_UPDATE_NO_UPDATES:
-      Serial.println("No new update available");
+      Sprintln("No new update available");
       break;
     case HTTP_UPDATE_OK:
-      Serial.println("Update OK");
+      Sprintln("Update OK");
       break;
     default:
-      Serial.println(ret);
+      Sprintln(ret);
       break;
   }
 }
