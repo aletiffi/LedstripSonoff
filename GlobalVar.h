@@ -47,7 +47,7 @@
 #define NULL_CHAR                 '\0'
 #define DEFAULT_AP_NAME           "SonoffLedStrip"
 //----------------------------------------------------------------------------
-#define FW_VERSION                "44.1.0.0"
+#define FW_VERSION                "44.1.1.0"
 //----------------------------------------------------------------------------
 //---To manage the OTA Drive api key------------------------------------------
 #define FAKE_API_KEY              "abc12345-1a1a-12a1-a1ab-a1ab1a1ab123"

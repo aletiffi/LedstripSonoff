@@ -230,7 +230,7 @@ void PushButtonFunction(int func) {
       break;
     case 5:
       Sprintln("Wifi signal power");
-      getWifiPower(Ssid.Val);
+      GetWifiPower(Ssid.Val);
       break;
     case 6:
       Sprintln("Load settings");
@@ -420,7 +420,7 @@ void ShowIpAddr() {
   }
 }
 
-bool getWifiPower(String netName) {
+bool GetWifiPower(String netName) {
   int netsNumber = WiFi.scanNetworks();
   int minRawLevel = -75;
   int maxRawLevel = -45;
@@ -479,7 +479,7 @@ void Connection_Manager() {
   WiFi.mode(WIFI_AP_STA);
 
   if (Ssid.Val != NULL_CHAR && Password.Val != NULL_CHAR) {
-    if (getWifiPower(Ssid.Val)) {
+    if (GetWifiPower(Ssid.Val)) {
       WiFi.begin(Ssid.Val, Password.Val);
       Sprintln("Connecting to: " + String(Ssid.Val));
       byte numCehck = 0;
